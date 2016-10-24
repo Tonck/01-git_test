@@ -1046,6 +1046,11 @@ int rop_set_string(redisContext *conn, char *key, char *value)
     int retn = 0;
 	redisReply *reply = NULL;
 	reply = redisCommand(conn, "set %s %s", key, value);
+#if 0
+    if (reply->type != REDIS_REPLY_STRING) {
+
+    }
+#endif
     //rop_test_reply_type(reply);
     if (strcmp(reply->str, "OK") != 0) {
         retn = -1;
@@ -1058,4 +1063,29 @@ END:
 
 	freeReplyObject(reply);
     return retn;
+}
+
+int rop_get_string(redisContext *conn, char *key, char *value)
+{
+    int ret = 0;
+
+    redisReply *reply= NULL;
+
+    reply = redisCommand(conn, "GET %s", key);
+    //rop_test_reply_type(reply);
+    if (reply->type != REDIS_REPLY_STRING) {
+		LOG(REDIS_LOG_MODULE, REDIS_LOG_PROC, "[-][GMS_REDIS]GET %s %s error", key);
+        ret = -1;
+        goto END;
+    }
+
+    //succ
+    
+    strncpy(value, reply->str, reply->len);
+    value[reply->len] = '\0';
+        
+END:
+    freeReplyObject(reply);
+
+    return ret;
 }
